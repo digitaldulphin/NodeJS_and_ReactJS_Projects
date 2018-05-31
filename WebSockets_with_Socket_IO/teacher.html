@@ -1,0 +1,322 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Teacher</title>
+    <style type = "text/css">
+	
+		#ShortQuestions {
+			display: none;
+		
+		}
+		#AnswerData {
+			border: 4px solid black;
+		}
+		
+		#TF_Question {
+			display: none;
+		
+		}
+		#AnswerData{
+			display: none;
+		}
+    </style>
+  </head>
+  <body>
+    <h1>Classroom Collaboration (teacher)</h1>
+	
+	
+	
+	<p>Number of Students ready: <span id = "cStudents">   </span> </p>
+	
+	
+	<h2 id = "phaseH2"> </h2>
+	<div id = "TypeOfquestions" >	
+	<nav> 
+	<li><button id = "Short_type"> Short Answer  </button></li>
+	<li><button id = "TF_Type">True or False </button> </li>				
+	</nav>				
+    </div>
+  
+
+	<div id = "ShortQuestions"> 		
+
+		 	<label for="TimeLimit">Time limit in seconds: </label> <input type="range" id="TimeLimit" name="TimeLimit" step="5" min="10" max="90"><br>
+		<label for="question">Question:</label> <input type="text" id="question"> <br /> 
+		<label for="answer">Answer:</label> <input type="answer" id="answer"> <br /> 
+		<button id = "ShortAnswerEnter"> Enter Question </button>
+	</div>
+	
+	
+	<form id = "TF_Question"> 
+		
+		<label for="TimeLimit">Time limit in seconds: </label> <input type="range" id="TimeLimit" name="TimeLimit" step="5" min="10" max="90"><br>
+		
+		<label for="question">Question:</label> <input type="text" id="question"> <br /> 
+		<input type="radio"  id = "True" name="TF" value="True"> True <br>
+		<input type="radio" id = "False" name="TF" value="False"> False <br>
+		<input type = "submit" id = "Enter" value = "Enter Question">
+	</form>
+	
+	<div id ="AnswerData">
+	<p>
+	
+	
+	<h3>Number of answers received:<span id = "itemA"></span></h3>
+		
+	<h3>Number of correct answeres:<span id = "itemB"></span></h3>
+				
+	<h3>Percentage of answers that are correct:<span id = "itemC"></span></h3>
+	
+	<h3>List of students that have answered correctly.<span id = "itemD"></span></h3>
+				
+	<h3>List of names of all students that answered incorrectly.<span id = "itemE"></span></h3>
+	
+	<h3>Short answer's inncorect answers<span id = "itemF"></span></h3>
+		
+	
+	</p>
+	</div>
+	
+	
+  
+	
+	
+	
+  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+
+
+
+  $('#phaseH2').empty().append("Choose Question type.");
+  
+  
+  
+  
+    /* Make the connection */
+    var socket = io();
+    
+	var CountOfStudents_ready = 0;
+	var QuestionTeacherHasChosen = 0; //0 is none. 1, is short. 2 is TR.
+	
+	socket.on('ClientEnteredName', function(msg){
+		
+		CountOfStudents_ready++;
+		
+		$('#cStudents').empty().append(CountOfStudents_ready);
+			
+	});
+	console.log("run");
+	
+	var countofAnsered =0.0;
+	var countOfCorrect = 0.0;
+	var listOfCorrect = []; 
+	var countOfInncorrect = 0.0;
+	var INNCorrectLST = []; 
+    var InnCorrecShortAnsers = [];
+	
+		
+	socket.on('results', function(msg) {
+	
+		//console.log("results submitted: " + JSON.stringify(msg));
+	
+	
+		countofAnsered++;
+		if(msg.correct)
+		{
+			countOfCorrect++;
+			listOfCorrect.push(msg.name);
+		}
+		else
+		{
+			countOfInncorrect++;
+			INNCorrectLST.push(msg.name);
+			if ( msg.Qtype == 1 )
+			{		
+				InnCorrecShortAnsers.push(msg.youAnser);		
+						
+			}
+		}
+
+		
+		$('#itemA').empty().append(" "+countofAnsered);
+		$('#itemB').empty().append(" "+countOfCorrect);
+		if(countofAnsered >0 ) 
+		{
+			var p = countOfCorrect/countofAnsered;
+			$('#itemC').empty().append(" "+p+" %");
+		
+			if(countOfCorrect>0)
+			{
+				var lst = "<ul>";
+				for( item in listOfCorrect )
+				{
+					lst += "<li>"+listOfCorrect[item]+"</li>";				
+				}
+				lst +="</li>";		
+				$('#itemD').empty().append(" "+lst);
+			}
+			
+			
+			
+			if(countOfInncorrect>0)
+			{
+				var lst = "<ul>";
+				for( item in INNCorrectLST )
+				{
+					lst += "<li>"+INNCorrectLST[item]+"</li>";				
+				}
+				lst +="</li>";		
+				$('#itemE').empty().append(" "+lst);
+			}
+			
+			if(msg.Qtype  == 1)
+			{
+				var lst = "<ul>";
+				for( item in InnCorrecShortAnsers )
+				{
+					lst += "<li>"+InnCorrecShortAnsers[item]+"</li>";				
+				}
+				lst +="</li>";		
+				$('#itemF').empty().append(" "+lst);
+			}
+			
+			
+		}
+		
+	});
+	
+	
+	/*Ask user if they want short or true false question question? */
+	$('#Short_type').click(function(){ 
+		$('#TypeOfquestions').hide();
+		$('#AnswerData').hide();
+		QuestionTeacherHasChosen = 1;
+		$('#ShortQuestions').show();
+		$('#phaseH2').empty().append("Make a Short Question.");
+		
+	});
+	$('#TF_Type').click(function(){ 		
+		$('#TypeOfquestions').hide();
+		$('#AnswerData').hide();
+		QuestionTeacherHasChosen = 2;
+		$('#TF_Question').show();			
+		$('#phaseH2').empty().append("Make a true or false question.");		
+	});
+	
+	
+	
+	
+    /* if the teacher clicks submit emit the submit question message */
+    $('#ShortAnswerEnter').click(function(){
+		var timelimit =  $("#ShortQuestions #TimeLimit").val();
+		socket.emit('submitquestion',{
+			TimeLimit:timelimit,		
+			Type: QuestionTeacherHasChosen,
+			question: $("#ShortQuestions #question").val(),			
+			answer: $("#answer").val()
+        });
+		$('#ShortQuestions').hide();
+		beginTimer(timelimit);
+		
+		return false;
+    });
+
+	$('#TF_Question').submit(function(){
+	
+		
+		var answerSet = "No";		
+		
+		if ( document.getElementById('True').checked 	)
+		{
+			answerSet = "True";	
+		}
+		else if( document.getElementById('False').checked  	)
+		{
+			answerSet = "False";
+			
+		}
+		
+		if( $("#TF_Question #question").val() == ""  )
+		{
+			alert("You Must enter a question..");
+		}
+		else 
+		{			
+			if(	answerSet == "No") 
+			{
+				alert("Must choose true or false...");
+			}
+			else
+			{
+				var timelimit = $("#TF_Question #TimeLimit").val();
+				socket.emit('submitquestion',{
+					TimeLimit: timelimit,
+					Type: QuestionTeacherHasChosen,
+					question: $("#TF_Question #question").val(),
+					answer: answerSet				
+				});
+				$('#TF_Question').hide();	
+				beginTimer(timelimit);
+			}			
+		}
+		return false;
+    });
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/** Function beginTimer
+			Purpose: Manages the timer for this app.
+			
+	*/
+	function beginTimer(timelimit)
+	{
+		$('#AnswerData').show();
+		 $('#phaseH2').empty().append("Question has been submitted!!! <br> Time left in seconds <span id = \"Timer\"> </span>");
+			var i = timelimit;
+	
+			var x = setInterval(function(){ 
+						
+				
+			if( i >= 0 )
+			{
+				$('#Timer').empty().append(i+"s");
+			}
+			
+			i--;
+			
+			if( i == -1 )
+			{
+			
+				 $('#phaseH2').append("<br> Time is up!");
+			}
+			
+			
+			/* Allow 2 extra seconds to let the lag catch up. */					
+			if(i == -2 )
+			{				
+				clearInterval(x);					
+				$('#phaseH2').empty().append("Choose Question type.");
+				$('#TypeOfquestions').show();
+				
+			}
+		}, 1000);
+			
+	}/* Function beginTimer */
+	
+	/** 
+	Created by Norman Potts.
+	Student Authorship Statement: StAuth10065: I Norman Potts, 000344657 certify that this material
+	is my original work. No other person's work has been used without due acknowledgement. I have 
+	not made my work available to anyone else.
+	*/
+  </script>
+  </body>
+</html>

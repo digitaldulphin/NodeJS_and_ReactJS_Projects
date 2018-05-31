@@ -1,0 +1,201 @@
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+	    <style type = "text/css">
+	
+		#waiting h1 {
+			font-size: 40px;
+		}
+	
+    </style>
+  </head>
+  <body>
+    <h1>Classroom Collaboration (student)</h1>  
+    
+	<p> StudentName:<span id = "StudentName"></span></p>
+	<div id ="waiting">
+		<h1> Waiting for question... </h1>
+		<form id="EnteryoNameForm" >
+			<label>Enter your name: </label><input id = "name" name = "name" type = "text"></input>
+			<button id = "EnterName">Enter Name</button>
+		</form>
+	</div>
+	
+	<div id = "Question">
+	
+		<div id="answers" >
+		  Question: <span id="question"></span> <br />
+		  
+		  <div id = "Answer_block">
+			
+		  </div>
+		  
+		  
+	
+		  <button type="submit" id = "enterAwnser" > Submit</button>
+		</div>
+	</div>
+	
+	
+	
+    <div id="result"></div>
+    <div id="answertext"></div>
+  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    
+	var nameHasBeenEntered =  false;
+	var QuestionHasBeenRecived = false;
+	var Qtype = 0;
+		
+	
+    /* Make the connection... */
+    var socket = io();
+	$('#Question').hide();
+	$('title').html("Student");
+	
+
+	$('#EnterName').click(function() {
+		var name =  $('#name').val()
+		socket.emit('EnterName',name);
+		$('#EnteryoNameForm').hide();		
+		$('#StudentName').append(" "+name);
+		nameHasBeenEntered = true;
+		
+		if (QuestionHasBeenRecived == true )
+		{
+			$('#Question').show();
+		
+		}
+		
+		return false;
+		
+	});
+	
+    /* If the user clickes the submit send the answer*/
+    $('#enterAwnser').click(function(){
+		
+		var answer = "";
+
+	
+		if(Qtype == 1 )
+		{				
+			answer = $('#answer').val();
+		}
+		else if(Qtype == 2 )
+		{
+		
+			if ( document.getElementById('True').checked 	)
+			{
+				answer = "True";	
+			}
+			else if( document.getElementById('False').checked  	)
+			{
+				answer = "False";				
+			}			
+		}
+		else 
+		{
+			answer = "Error";
+		}
+		
+		var name =  $('#StudentName').text();
+		socket.emit('answerquestion', {
+			Answer: answer,
+			Name: name,					
+			Qtype: Qtype
+		});
+		
+		return false;
+    });
+
+    /* If a question is recived than add it to the html page. */
+    socket.on('deliverquestion', function(msg){
+		QuestionHasBeenRecived = true;
+		
+		$('#question').empty().append(msg.question);
+		$('#waiting h1').empty().append("Question has been submitted!!! <br> Time left in seconds <span id = \"Timer\"> </span>");
+		beginTimer( msg.TimeLimit, msg.answer );
+		//Set Answer_block;
+		var Answer_block =   "";
+		Qtype = msg.Type;
+		if( msg.Type == 1 )
+		{	Answer_block +=   "<label for=\"answer\">Answer:</label> <input type=\"text\" id=\"answer\"> <br />";}
+		else if(msg.Type == 2)
+		{							
+Answer_block += "<input type=\"radio\"  id = \"True\" name=\"TF\" value=\"True\"> True <br>";
+Answer_block += "<input type=\"radio\" id = \"False\" name=\"TF\" value=\"False\"> False <br>";						
+		}
+		else
+		{	Answer_block =   "<p>Error...</p>";}
+	
+		$('#Answer_block').empty().append(Answer_block);
+		
+		if( nameHasBeenEntered == true)
+		{
+			$('#Question').show();			
+		}		
+	});
+	
+	/** Function beginTimer
+			Purpose: implements the timer functionality, When timer is up question disappears and 
+			         waits two more seconds to give user time to read messages.
+			How it works: TimeLimit comes from parameter then code loops and waits 1 second for ever
+			              interger in timelimit...
+	*/
+	function beginTimer(timelimit, answer) 
+	{	var i = timelimit;
+	
+		var x = setInterval(function(){ 
+			
+			
+			if( i >= 0 )
+			{
+					
+				$('#Timer').empty().append(i+"s");
+			}
+			i--;
+			
+			if( i == -1 )
+			{
+					
+				$('#waiting h1').append("<br> Time is up! <br>");
+				$('#Question').hide();
+			}
+			
+			/*Wait an extra two seconds to allow user to read messages.*/
+			if(i == -2 )
+			{
+				clearInterval(x);		
+				$('#waiting h1').empty().append("Waiting for question... ");
+			}
+		}, 1000);
+			
+	}/*End of function beginTimer*/
+	
+	/* If a result is recived show the user. */
+    socket.on('resultquestion', function(msg) {
+		
+		$('#Question').hide();
+		$("#result").empty().append("<h3>Last question results...</h3>");
+		if (msg.correct) 
+		{	
+			$("#result").append("Correct!");	
+		}
+		else 
+		{	
+			$("#result").append("Incorrect!"); 
+		}
+		  
+		$("#answertext").empty().append("<br>Your answer: " + msg.youAnser);
+		$("#answertext").append("<br>Correct answer: " + msg.answer);
+    });
+	/** 
+	Created by Norman Potts.
+	Student Authorship Statement: StAuth10065: I Norman Potts, 000344657 certify that this material
+	is my original work. No other person's work has been used without due acknowledgement. I have 
+	not made my work available to anyone else.
+	*/
+  </script>
+  </body>
+</html>
