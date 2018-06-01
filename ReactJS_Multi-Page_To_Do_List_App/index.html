@@ -1,0 +1,164 @@
+<!DOCTYPE html><html><head><title>ReactJS Components</title><script src="https://unpkg.com/react@15.3.2/dist/react.js"></script><script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+  <style>
+  body { background: rgb(102, 179, 255); }
+  
+  #App {
+	border: 3px solid black;
+	display: block;	
+	font-family: "Comic Sans MS", "Arial";
+	font-weight: bold;
+	background: white;
+	position: absolute;
+	left:2em;
+	right:2em;
+    top: 2em; 
+    bottom: 2em; 
+    
+  }
+  nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav li {	
+	float:left;
+	width: 25%;
+  }
+  nav li a {
+	display: block;
+	padding: 10px;
+	background: rgb(51, 204, 51);
+	border: 1px solid black;
+	color: black;
+	text-decoration: none;
+	text-align: center;
+  }
+  nav li a:hover {
+	background: rgb(173, 235, 173);
+  }
+  #list li {
+	  list-style-type: none;
+  }
+  .active {
+	background: rgb(173, 235, 173);
+  }
+
+  </style>
+</head>
+<body>
+  <div id="App"></div>
+  <script type="text/babel">
+	// Code is formatted horizontally because I can read more of it on a wide screen. If I have trouble reading it I can always move it around.
+
+    // Included to shortern Router components to "Router" instead of using "ReactRouter.Router"    
+    var ReactRouter = window.ReactRouter; var Router = ReactRouter.Router; var Route = ReactRouter.Route; var Link = ReactRouter.Link; var IndexLink = ReactRouter.IndexLink; var IndexRoute = ReactRouter.IndexRoute; var hashHistory = Router.hashHistory;
+	
+    // Example of using React Router
+    var App = React.createClass({ render: function() { return (
+          <div> <h1>My App</h1> <nav> <ul> 
+		  
+		  
+		  <li><IndexLink to="/" activeClassName="active" >Home</IndexLink></li>  <li><Link to="/about" activeClassName="active" >About</Link></li>  <li><Link to="/contact" activeClassName="active">Contact</Link></li>  <li><Link to="/todo" activeClassName="active">Todo</Link></li>
+            </ul> </nav> <div>
+              {this.props.children}
+            </div> </div>
+        ) } });
+		
+		
+    var Home = React.createClass({  render: function() {  return ( <p>Home page</p> );  } });
+	
+    var About = React.createClass({ render: function() {  return ( <p>About page</p> ); }  });
+	
+    var Contact = React.createClass({ render: function() {  return ( <p>Contact page</p> );  }  });
+	
+	
+	
+	
+	
+	
+	var Todo = React.createClass({      
+		getInitialState: function() { return { items:[], text: '' , add: "Add", currentID: 1 }; },
+		EnterItem: function(event) {
+			event.preventDefault(); /// Prevent page reload.
+			if ( !this.state.text.length ) {
+				return;
+			} else {
+			
+				if(this.state.add == "Add") {
+					var x =  this.state.text;	var arr = this.state.items;   var id = arr.length+1;
+					var obj = { id:id, txt:x };    arr.push(obj);				
+					this.setState({items: arr, text: '' });				
+				} else {
+					var x = this.state.text; var arr = this.state.items;  var id = this.state.currentID;
+					var element = id -1;
+					var obj = { id:id, txt:x };					
+					arr[element] = obj;										
+					var topID = arr.length;			
+					this.setState({items: arr, text: '', add: "Add", currentID:topID });									
+				}
+			
+				
+			}	
+		},
+		DeleteItem: function( id) {
+				var i = 0;
+				var x = this.state.items;
+				for(var i = 0; i < this.state.items.length; i++) {
+					if( this.state.items[i].id == id )
+					{ 	
+						
+						x.splice(i, 1);
+						for(var j = 1; j <= this.state.items.length; j++) {
+							var item = x[j-1] ;
+							item.id = j;												
+						}
+						break;
+					}
+				}				
+				this.setState({items: x });		
+				
+		},	
+		HandleEdit: function(id, text) {
+			
+			this.setState({ text: text, currentID: id, add:"Edit"});	
+				
+		},		
+		handleChange: function(event) {
+			this.setState({text: event.target.value});				
+		},
+		
+		render: function() { return ( 
+		<div><h2>Todo page</h2><form onSubmit = { false }>
+		<p> Add to Todo list: <input type="Text" name ="todoInput" onChange={this.handleChange} value = {this.state.text}  ></input>  <button onClick = {this.EnterItem}> {this.state.add} </button></p>																																																
+		<ul id = "list">				
+			{this.state.items.map((item) => (									
+		<li key = {item.id} > <button type = "button" onClick = { () =>  this.DeleteItem(item.id) } >Delete</button> <button type = "button" onClick = {  () => this.HandleEdit(item.id, item.txt) } >Edit</button> {item.id}. {item.txt} </li>					
+			))}
+		</ul>		
+		</form> </div>
+		); },	
+    });
+	
+
+	
+	
+	
+	
+	
+	
+	
+	var routes = (
+	      <Router history={hashHistory} >
+            <Route path="/" component={App}>            
+              <IndexRoute component={Home}></IndexRoute>
+              <Route path="/about" component={About}></Route>
+              <Route path="/contact" component={Contact} ></Route>
+			  <Route path="/todo" component={Todo} ></Route>
+			  </Route>
+          </Router>
+	);	
+    ReactDOM.render ( routes, document.getElementById("App") );
+	
+  </script>
+</body>
+</html>
