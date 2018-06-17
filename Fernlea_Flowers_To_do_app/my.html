@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang = "en-US">
+	<!-- my.html
+		Created by Norman Potts
+		This html file is apart of the Todolist project for Fernlea Flowers.
+		Other than the html template, and script imports, most front end work is done in
+		FrontEnd.js.
+	-->
+	
+
+	<head><title>Fernlea Flowers To Do List </title>
+	<script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
+	<script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <style>
+		body { 
+			background: rgb(102, 179, 255);
+		}
+		h1, h2 {	
+			padding-left: 1em; 
+		}
+		#TodoPage { 
+			margin-left:2em;	
+			margin-right: 2em; 
+			display: block; 
+		}
+		#App { 
+			border: 3px solid black; 	
+			display: block;		
+			font-family: "Arial";	
+			font-weight: bold;	
+			background: white;	
+			position: absolute;	
+			left:2em;	
+			right:2em;   
+			top: 2em;   
+			/* bottom: 2em;     */ 
+		}	 
+	</style> 
+	</head>
+	<body>
+		<div id="App"></div> <script type="text/babel" src ="FrontEnd.js"></script>
+	</body>
+</html>
